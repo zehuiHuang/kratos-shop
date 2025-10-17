@@ -5,10 +5,12 @@ import (
 	consul "github.com/go-kratos/kratos/contrib/registry/consul/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/google/wire"
 	consulAPI "github.com/hashicorp/consul/api"
+	grpcx "google.golang.org/grpc"
 	userV1 "shop/api/service/user/v1"
 	"shop/internal/conf"
 	"time"
@@ -36,9 +38,13 @@ func NewUserServiceClient(ac *conf.Auth, sr *conf.Service, rr registry.Discovery
 		grpc.WithEndpoint(sr.User.Endpoint), // consul
 		grpc.WithDiscovery(rr),              // consul
 		grpc.WithMiddleware(
+			// 链路追踪
+			tracing.Client(),
 			recovery.Recovery(),
 		),
 		grpc.WithTimeout(2*time.Second),
+		//??
+		grpc.WithOptions(grpcx.WithStatsHandler(&tracing.ClientHandler{})),
 	)
 	if err != nil {
 		panic(err)
@@ -60,6 +66,7 @@ func NewRegistrar(conf *conf.Registry) registry.Registrar {
 	return r
 }
 
+// NewDiscovery 从consul获取服务信息
 func NewDiscovery(conf *conf.Registry) registry.Discovery {
 	c := consulAPI.DefaultConfig()
 	c.Address = conf.Consul.Address

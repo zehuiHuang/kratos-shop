@@ -3,13 +3,12 @@ package server
 import (
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/middleware/auth/jwt"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/selector"
+	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/middleware/validate"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	jwt2 "github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/handlers"
 	v1 "shop/api/shop/v1"
 	"shop/internal/conf"
@@ -22,11 +21,13 @@ func NewHTTPServer(c *conf.Server, ac *conf.Auth, s *service.ShopService, logger
 		http.Middleware(
 			recovery.Recovery(),
 			validate.Validator(), // 接口访问的参数校验
-			selector.Server( // jwt 验证
-				jwt.Server(func(token *jwt2.Token) (interface{}, error) {
-					return []byte(ac.JwtKey), nil
-				}, jwt.WithSigningMethod(jwt2.SigningMethodHS256)),
-			).Match(NewWhiteListMatcher()).Build(),
+			//新增trace
+			tracing.Server(),
+			//selector.Server( // jwt 验证
+			//	jwt.Server(func(token *jwt2.Token) (interface{}, error) {
+			//		return []byte(ac.JwtKey), nil
+			//	}, jwt.WithSigningMethod(jwt2.SigningMethodHS256)),
+			//).Match(NewWhiteListMatcher()).Build(),
 			logging.Server(logger),
 		),
 		http.Filter(handlers.CORS( // 浏览器跨域

@@ -20,6 +20,16 @@ kratos proto server api/user/v1/user.proto -t internal/service
 
 
 # 环境依赖
+```shell
+##consul
+docker run -d -p 8500:8500 -p 8300:8300 -p 8301:8301 -p 8302:8302 -p 8600:8600/udp consul:1.15.4 consul agent -dev -client=0.0.0.0
+
+## Jaege
+docker run --rm --name jaeger -p14268:14268 -p16686:16686 jaegertracing/all-in-one
 ```
+
+
+# API 调用验证
+```shell
 
 ```

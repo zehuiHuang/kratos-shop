@@ -151,30 +151,30 @@ func (uc *UserUsecase) CreateUser(ctx context.Context, req *v1.RegisterReq) (*v1
 		return nil, err
 	}
 	createUser, err := uc.uRepo.CreateUser(ctx, &newUser)
-	claims := auth.CustomClaims{
-		ID:          createUser.ID,
-		NickName:    createUser.NickName,
-		AuthorityId: createUser.Role,
-		RegisteredClaims: jwt2.RegisteredClaims{
-			NotBefore: &jwt2.NumericDate{
-				time.Now(),
-			}, // 签名的生效时间
-			ExpiresAt: &jwt2.NumericDate{
-				time.Now().Add(time.Second * 1000000),
-			}, // 30天过期
-			Issuer: "Gyl",
-		},
-	}
-	token, err := auth.CreateToken(claims, uc.signingKey)
-	if err != nil {
-		return nil, err
-	}
+	//claims := auth.CustomClaims{
+	//	ID:          createUser.ID,
+	//	NickName:    createUser.NickName,
+	//	AuthorityId: createUser.Role,
+	//	RegisteredClaims: jwt2.RegisteredClaims{
+	//		NotBefore: &jwt2.NumericDate{
+	//			time.Now(),
+	//		}, // 签名的生效时间
+	//		ExpiresAt: &jwt2.NumericDate{
+	//			time.Now().Add(time.Second * 1000000),
+	//		}, // 30天过期
+	//		Issuer: "Gyl",
+	//	},
+	//}
+	//token, err := auth.CreateToken(claims, uc.signingKey)
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	return &v1.RegisterReply{
 		Id:        createUser.ID,
 		Mobile:    createUser.Mobile,
 		Username:  createUser.NickName,
-		Token:     token,
+		Token:     "test",
 		ExpiredAt: time.Now().Unix() + 60*60*24*30,
 	}, nil
 }

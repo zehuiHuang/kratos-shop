@@ -3,6 +3,11 @@ package main
 import (
 	"flag"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/sdk/resource"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	"os"
 
 	"github.com/go-kratos/kratos/v2"
@@ -13,6 +18,8 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"shop/internal/conf"
+
+	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
 )
 
 // go build -ldflags "-X main.Version=x.y.z"
@@ -40,6 +47,7 @@ func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server, rr registry.Reg
 		kratos.Logger(logger),
 		kratos.Server(
 			hs,
+			//gs,
 		),
 		kratos.Registrar(rr),
 	)
@@ -77,6 +85,11 @@ func main() {
 		panic(err)
 	}
 
+	err := setTracerProvider(bc.Trace.Endpoint)
+	if err != nil {
+		panic(err)
+	}
+
 	app, cleanup, err := initApp(bc.Server, bc.Data, bc.Auth, bc.Service, &rc, logger)
 	if err != nil {
 		panic(err)
@@ -87,4 +100,25 @@ func main() {
 	if err := app.Run(); err != nil {
 		panic(err)
 	}
+}
+
+func setTracerProvider(url string) error {
+	// Create the Jaeger exporter
+	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(url)))
+	if err != nil {
+		return err
+	}
+	tp := tracesdk.NewTracerProvider(
+		// Set the sampling rate based on the parent span to 100%
+		tracesdk.WithSampler(tracesdk.ParentBased(tracesdk.TraceIDRatioBased(1.0))),
+		// Always be sure to batch in production.
+		tracesdk.WithBatcher(exp),
+		// Record information about this application in an Resource.
+		tracesdk.WithResource(resource.NewSchemaless(
+			semconv.ServiceNameKey.String(Name),
+			attribute.String("env", "dev"),
+		)),
+	)
+	otel.SetTracerProvider(tp)
+	return nil
 }
