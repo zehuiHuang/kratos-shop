@@ -8,6 +8,7 @@ require (
 	github.com/go-kratos/kratos/v2 v2.9.0
 	github.com/go-redis/redis/extra/redisotel v0.3.0
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/golang/protobuf v1.5.4
 	github.com/google/wire v0.6.0
 	github.com/hashicorp/consul/api v1.32.4
 	github.com/onsi/ginkgo v1.16.5
