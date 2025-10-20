@@ -26,6 +26,17 @@ docker run -d -p 8500:8500 -p 8300:8300 -p 8301:8301 -p 8302:8302 -p 8600:8600/u
 
 ## Jaege
 docker run --rm --name jaeger -p14268:14268 -p16686:16686 jaegertracing/all-in-one
+
+## ES
+docker run -d \
+  --name elasticsearch \
+  -p 9200:9200 \
+  -p 9300:9300 \
+  -e "discovery.type=single-node" \
+  -e "xpack.security.enabled=false" \
+  -e "ES_JAVA_OPTS=-Xms512m -Xmx512m" \
+  --network elastic-network \
+  docker.elastic.co/elasticsearch/elasticsearch:7.17.0
 ```
 
 
