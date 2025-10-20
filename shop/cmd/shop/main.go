@@ -40,7 +40,7 @@ func init() {
 
 func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server, rr registry.Registrar) *kratos.App {
 	return kratos.New(
-		kratos.ID(id+"shop.api"),
+		kratos.ID("shop.api"),
 		kratos.Name(Name),
 		kratos.Version(Version),
 		kratos.Metadata(map[string]string{}),
